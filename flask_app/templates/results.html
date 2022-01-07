@@ -4,10 +4,11 @@
 <head>
 
     <meta charset="utf-8">
-    <link rel="icon" href="http://obj-cache.cloud.ruanbekker.com/favicon.ico">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="/static/img/icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 
-    <title>Results</title>
+    <title>Searching...</title>
 
 </head>
 
@@ -26,7 +27,7 @@
                 <a href="/">
                     <center>
                         <h1>
-                            My Personal search
+                            Search
                         </h1>
                     </center>
                 </a>
@@ -56,9 +57,9 @@
         </center>
         <br> {% for hit in res['hits']['hits'] %}
 
-        <div class="panel panel-default">
-            <div class="panel-heading">{{ hit['_source']['name'] }}</div>
-            <div class="panel-body">
+        <div class="card mb-3">
+            <div class="card-header"><h3>{{ hit['_source']['name'] }}</h3></div>
+            <div class="card-body">
                 <p>{{ hit['highlight']['description'][0] |safe }}</p>
                 <br>
                 <a href="{{ hit['_source']['url'] }}" class="btn btn-primary">Book it!</a>

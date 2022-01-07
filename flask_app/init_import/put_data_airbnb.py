@@ -28,8 +28,6 @@ for l in lines:
             d["amenities"] = jd["amenities"]
             d["url"] = jd["listing_url"]
             d["city"] = jd["address"]["market"]
-            d["beds"] = jd["beds"]
-            d["bathroom"] = jd["bathroom"]
             d["price"] = jd["price"]
 
 
