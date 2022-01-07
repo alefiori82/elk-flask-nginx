@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <link rel="icon" href="http://obj-cache.cloud.ruanbekker.com/favicon.ico">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>Results</title>
+
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-fixed-top justify-content-between"  style="background-color: transparent;
+    background-image: linear-gradient(130deg,#1f2b38 0%, #56708c 100%); min-height: 50px; border-bottom-style: solid; border-bottom-color:#555c5c;border-width: 5px;">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="/"><img src="/static/img/logo.png" height="50" alt="Search">
+		</a>
+	</div>
+	</nav>
+
+    <div id="content" class="mb-5 container-fluid">
+        <div style="background:transparent !important" class="jumbotron">
+            <div>
+                <a href="/">
+                    <center>
+                        <h1>
+                            My Personal search
+                        </h1>
+                    </center>
+                </a>
+            </div>
+        </div>
+
+        <form action="/search/" method="post">
+            <div class="input-group">
+                <input type="text" class="form-control input-lg" name="input" placeholder="Search" autofocus>
+                <div class="input-group-btn">
+                    <button class="btn btn-primary btn-lg" type="submit">
+          <i class="bi bi-search"></i>
+        </button>
+                </div>
+            </div>
+        </form>
+
+        <!--
+        <center>
+            <h1>Results: ({{ res['hits']['total'] }}) </h1>
+        </center>
+        -->
+        <br>
+        <hr>
+        <center>
+            <p style="text-align: center;"><b>Results</b>: {{ res['hits']['total']["value"] }} </p>
+        </center>
+        <br> {% for hit in res['hits']['hits'] %}
+
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ hit['_source']['name'] }}</div>
+            <div class="panel-body">
+                <p>{{ hit['highlight']['description'][0] |safe }}</p>
+                <br>
+                <a href="{{ hit['_source']['url'] }}" class="btn btn-primary">Book it!</a>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+    <div class="container-fluid fixed-bottom navbar-dark bg-dark mt-5 text-right" style="background-color: transparent;
+    background-image: linear-gradient(130deg,#1f2b38 0%, #56708c 100%); min-height: 50px;">
+		<span class="navbar-text ml-auto" style="color:#ccc; font-size:0.8em">
+				Copyright 2022 | <a href="https://flowygo.com/">FlowyGO</a> | All rights reserved
+		</span>
+	</div>
+</body>
+
+</html>
