@@ -1,11 +1,27 @@
 version: '3.2'
 
 services:
+  setup:
+    build:
+      context: setup/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    init: true
+    volumes:
+      - setup:/state:Z
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
   elasticsearch:
     build:
       context: elasticsearch/
       args:
-        ELK_VERSION: $ELK_VERSION
+        ELASTIC_VERSION: $ELASTIC_VERSION
     volumes:
       - type: bind
         source: ./elasticsearch/config/elasticsearch.yml
@@ -19,7 +35,7 @@ services:
       - "9300:9300"
     environment:
       ES_JAVA_OPTS: "-Xmx1g -Xms256m"
-      ELASTIC_PASSWORD: changeme
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       # Use single node discovery in order to disable production mode and avoid bootstrap checks.
       # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
       discovery.type: single-node
@@ -30,22 +46,18 @@ services:
     build:
       context: logstash/
       args:
-        ELK_VERSION: $ELK_VERSION
+        ELASTIC_VERSION: $ELASTIC_VERSION
     volumes:
-      - type: bind
-        source: ./logstash/config/logstash.yml
-        target: /usr/share/logstash/config/logstash.yml
-        read_only: true
-      - type: bind
-        source: ./logstash/pipeline
-        target: /usr/share/logstash/pipeline
-        read_only: true
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
     ports:
       - "5044:5044"
-      - "6100:5000"
+      - "50000:50000/tcp"
+      - "50000:50000/udp"
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx1g -Xms256m"
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
     networks:
       - elk
     depends_on:
@@ -55,7 +67,7 @@ services:
     build:
       context: kibana/
       args:
-        ELK_VERSION: $ELK_VERSION
+        ELASTIC_VERSION: $ELASTIC_VERSION
     volumes:
       - type: bind
         source: ./kibana/config/kibana.yml
@@ -63,6 +75,8 @@ services:
         read_only: true
     ports:
       - "5601:5601"
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     networks:
       - elk
     depends_on:
@@ -70,21 +84,32 @@ services:
   
   filebeat:
     build:
-      context: filebeat/
+      context: extensions/filebeat/
       args:
-        ELK_VERSION: $ELK_VERSION
-    entrypoint: "filebeat -e -strict.perms=false"
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    # Run as 'root' instead of 'filebeat' (uid 1000) to allow reading
+    # 'docker.sock' and the host's filesystem.
+    user: root
+    command:
+      # Log to stderr.
+      - -e
+      # Disable config file permissions checks. Allows mounting
+      # 'config/filebeat.yml' even if it's not owned by root.
+      # see: https://www.elastic.co/guide/en/beats/libbeat/current/config-file-permissions.html
+      - --strict.perms=false
     volumes:
-      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./extensions/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro,Z
       - ./nginx/log:/var/log/nginx/:ro
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+    networks:
+      - elk
     depends_on:
       - flask_app
       - nginx
       - logstash
       - elasticsearch
       - kibana
-    networks:
-      - elk
   
   flask_app: 
     container_name: flask_app
@@ -117,3 +142,4 @@ networks:
 
 volumes:
   elasticsearchdata:
+  setup:
