@@ -21,17 +21,18 @@ def search_request():
                 "multi_match" : {
                     "query": search_term, 
                     "fields": [
-                        "description", 
-                    ] 
+                        "description"
+                    ],
+                    "fuzziness": 2
                 }
             },
             "highlight" : {
                 "fields": {
-                    "description": {},
+                    "description": {}
                 },
                 "pre_tags" : ["<b>"],
-                "post_tags" : ["</b>"],
+                "post_tags" : ["</b>"]
             }
-        }
+  }
     )
     return render_template('results.html', res=res )

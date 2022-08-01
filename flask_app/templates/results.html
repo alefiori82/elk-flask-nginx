@@ -60,7 +60,9 @@
         <div class="card mb-3">
             <div class="card-header"><h3>{{ hit['_source']['name'] }}</h3></div>
             <div class="card-body">
-                <p>{{ hit['highlight']['description'][0] |safe }}</p>
+                {% for h in hit['highlight']['description'] %}
+                    <p>{{ h |safe }}</p>
+                {% endfor %}
                 <br>
                 <a href="{{ hit['_source']['url'] }}" class="btn btn-primary">Book it!</a>
             </div>
